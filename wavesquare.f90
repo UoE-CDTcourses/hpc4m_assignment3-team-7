@@ -5,8 +5,6 @@ real*8:: dx,dt,r,x,y,final_t,t_start,t_end
 integer:: i,j,k,T,M,Jproc,start_row,start_col,n
 real*8, allocatable:: u(:,:,:),right(:),left(:),sright(:),sleft(:),solt(:,:),sol(:,:)
 integer:: comm,rank,nproc,ierr,num
-character(10):: fileid
-character(20):: filename
 real*8:: lrcor,ulcor,urcor,llcor
 
 
@@ -206,49 +204,10 @@ do k=1,T
   endif
 
 
-!save solution at 0, 1/3, 2/3, 3/3 of final time
-!  if ((k==1).or.(k==int(T/3)).or.(k==int(2*T/3)).or.(k==T)) then
-!
-!    call mpi_gather(u(:,:,2),Jproc*(M+1),mpi_real8,solt,Jproc*(M+1),mpi_real8,0,comm,ierr)
-!    if (rank==0) then
-!      do i=1,nproc
-!        sol(:,(i-1)*(Jproc-2):i*(Jproc-2)-1)=solt(:,(i-1)*Jproc+1:i*Jproc-2)    
-!      enddo
-!      sol(:,M-1:M)=solt(:,nproc*Jproc-1:nproc*Jproc)
-!      
-!      write(fileid,'(i0)') num
-!      num=num+1
-!      filename='wave'//trim(adjustl(fileid))//'.dat'
-!      open(10,file=trim(filename))
-!      
-!      do i=0,M
-!        write(10,*) sol(i,:)
-!      enddo
-!      close(10)
-!
-!      solt=0.d0
-!      sol=0.d0
-!    endif
-!  endif
-
-
 !make current solution the initial one for next iteration
   u(:,:,0)=u(:,:,1)
   u(:,:,1)=u(:,:,2)
 enddo
-
-!do i=0,nproc-1
-!  if (rank==i) then
-!    do j=1,Jproc
-!      print *,(u(j,k,2),k=1,Jproc)
-!    enddo
-!  endif
-!  call mpi_barrier(comm,ierr)
-!  print *
-!  print *
-!enddo
-
-
 
 call mpi_barrier(comm,ierr)
 t_end=mpi_wtime()
